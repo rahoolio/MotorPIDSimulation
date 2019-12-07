@@ -1,0 +1,10 @@
+cmake_minimum_required(VERSION 3.10)
+set(CMAKE_CXX_STANDARD 17)
+
+Project(ELCT350)
+set(SIMULATION_INCLUDE "${CMAKE_CURRENT_SOURCE_DIR}/include")
+file(GLOB_RECURSE SIMULATION_SOURCE "${CMAKE_CURRENT_SOURCE_DIR}/src/*.cpp")
+file(GLOB_RECURSE SIMULATION_HEADERS "${SIMULATION_INCLUDE}/*.h")
+
+add_executable(Simulation ${SIMULATION_SOURCE})
+target_include_directories(Simulation PUBLIC "${SIMULATION_INCLUDE}")
