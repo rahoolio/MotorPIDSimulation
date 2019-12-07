@@ -215,6 +215,15 @@ namespace ELCT350
       
       #pragma endregion
 
+
+	  for (size_t i = 0; i < _rows; ++i)
+	  {
+		  for (size_t j = 0; j < _columns; ++j)
+		  {
+			  result(i, j) = this->data[i][j] + addend(i, j);
+		  }
+	  }
+
       return result;
     }
 
@@ -233,6 +242,14 @@ namespace ELCT350
       #pragma region Add Subtraction logic here!
      
       #pragma endregion
+
+	  for (size_t i = 0; i < _rows; ++i)
+	  {
+		  for (size_t j = 0; j < _columns; ++j)
+		  {
+			  result(i, j) = this->_data[i][j] - subtrahend(i, j);
+		  }
+	  }
 
       return result;
     }
@@ -253,6 +270,19 @@ namespace ELCT350
       #pragma region Add Multiplication logic here!
       
       #pragma endregion
+
+	  for (size_t i = 0; i < _rows; ++i)
+	  {
+		  for (size_t j = 0; j < columns; ++j)
+		  {
+			  Numeric sum = Numeric{};
+			  for (size_t k = 0; k < multiplicand.getRows(); ++k)
+			  {
+				  sum = sum + this->_data[i][k] * multiplicand(k, j);
+			  }
+			  product(i, j) = sum;
+		  }
+	  }
 
       return product;
     }
