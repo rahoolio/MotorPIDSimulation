@@ -8,12 +8,6 @@
 #include "MnaBlocks/Capacitor.h"
 #include "SignalBlocks/VelocitySensor.h"
 
-#include "PhasorSystem.h"
-#include "PhasorBlocks/Ground.h"
-#include "PhasorBlocks/Resistor.h"
-#include "PhasorBlocks/VoltageSourceAC.h"
-#include "PhasorBlocks/Capacitor.h"
-
 #include "Plotter/Plotter.h"
 
 using namespace ELCT350;
@@ -66,34 +60,5 @@ int main()
                  << endl;
   }
 
-  PhasorSystem systemP;
-  Phasor::Ground gp;
-  Phasor::VoltageSourceAC vac1p, vac2p;
-  Phasor::Resistor r1p, r2p;
-  Phasor::Capacitor c1p, c2p;
-
-  vac2p.setParameter(Phasor::VoltageSourceAC::Voltage, 1.0);
-  vac2p.setParameter(Phasor::VoltageSourceAC::Frequency, 1.0);
-
-  r1p.setParameter(Phasor::Resistor::Resistance, 1);
-  c1p.setParameter(Phasor::Capacitor::Capacitance, 2);
-
-  systemP.connect(vac2p.getPort(Phasor::VoltageSourceAC::Positive), r1p.getPort(Phasor::Resistor::Positive));
-  systemP.connect(r1p.getPort(Phasor::Resistor::Negative), c1p.getPort(Phasor::Capacitor::Positive));
-  systemP.connect(c1p.getPort(Phasor::Capacitor::Negative), gp.getPort(Phasor::Ground::Reference));
-  systemP.connect(gp.getPort(Phasor::Ground::Reference), vac2p.getPort(Phasor::VoltageSourceAC::Negative));
-
-  ofstream outputBodeFile("outputBode.csv");
-  ostream& outputBodeStream = outputBodeFile;
-  outputBodeStream << "Frequency,Magnitude" << endl;
-  auto logspace = pow(FINAL_FREQUENCY / 1e-3, 1.0 / 40.0);
-  for (double frequency = 1e-3; frequency <= FINAL_FREQUENCY; frequency *= logspace)
-  {
-    systemP.step(10.0, frequency);
-    auto capVoltage = c1p.getAcross(Phasor::Capacitor::Positive);
-    outputBodeStream << frequency << ','
-      << 10.0 * log10(abs(capVoltage))
-      << endl;
-  }
   return OK;
 }
