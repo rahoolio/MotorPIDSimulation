@@ -7,6 +7,11 @@
 #include "MnaBlocks/VoltageSourceAC.h"
 #include "MnaBlocks/Capacitor.h"
 #include "SignalBlocks/VelocitySensor.h"
+#include "SignalBlocks/ConstantOutput.h"
+#include "SignalBlocks/SumDiff.h"
+#include "SignalBlocks/PIDController.h"
+#include "SignalBlocks/SignalControlledVoltageSource.h"
+#include "MnaBlocks/MotorDC.h"
 
 #include "Plotter/Plotter.h"
 
@@ -24,37 +29,50 @@ enum ErrorCodes
 int main()
 {
   MnaSystem system;
-  Mna::Ground g;
-  Mna::VoltageSourceAC vac1, vac2;
-  Mna::Resistor r1;
-  Mna::Capacitor c1;
   Signal::VelocitySensor sensor;
+  Signal::ConstantOutput co1 = Signal::ConstantOutput(1000.0);
+  Signal::SumDiff sd1;
+  Signal::PIDController pid1;
+  Signal::SignalControlledVoltageSource scvs1;
+  Mna::MotorDC mdc1;
+
+  pid1.setParameter(Signal::PIDController::Kp, 0.1);
+  pid1.setParameter(Signal::PIDController::Ki, 0.5);
+  pid1.setParameter(Signal::PIDController::Kd, 0.01);
+
+  scvs1.setParameter(Signal::SignalControlledVoltageSource::Gain, 0.001);
+
+  mdc1.setParameter(Mna::MotorDC::L, 0.29366e-6); // Inductance
+  mdc1.setParameter(Mna::MotorDC::R, 1.078); // Resistance
+  mdc1.setParameter(Mna::MotorDC::B, 6.445e-7); // Damping coeficient
+  mdc1.setParameter(Mna::MotorDC::K, 0.0022); // Motor gain
+  mdc1.setParameter(Mna::MotorDC::J, 2.1518e-6); // Inertia
+
+  system.connect(scvs1.getPort(Signal::SignalControlledVoltageSource::Positive), mdc1.getPort(Mna::MotorDC::Positive));
+  system.connect(mdc1.getPort(Mna::MotorDC::Negative), scvs1.getPort(Signal::SignalControlledVoltageSource::Negative));
+  system.connect(mdc1.getPort(Mna::MotorDC::Velocity), sensor.getPort(Signal::VelocitySensor::Sensor));
   
-
-  vac1.setParameter(Mna::VoltageSourceAC::Voltage, 4.0);
-  vac1.setParameter(Mna::VoltageSourceAC::Frequency, 0.1);
-  vac2.setParameter(Mna::VoltageSourceAC::Voltage, 4.0);
-  vac2.setParameter(Mna::VoltageSourceAC::Frequency, 1.0);
-
-  r1.setParameter(Mna::Resistor::Resistance, 1);
-  c1.setParameter(Mna::Capacitor::Capacitance, 2);
-
-  system.connect(vac1.getPort(Mna::VoltageSourceAC::Positive), vac2.getPort(Mna::VoltageSourceAC::Negative));
-  system.connect(vac2.getPort(Mna::VoltageSourceAC::Positive), r1.getPort(Mna::Resistor::Positive));
-  system.connect(r1.getPort(Mna::Resistor::Negative), c1.getPort(Mna::Capacitor::Positive));
-  system.connect(c1.getPort(Mna::Capacitor::Negative), g.getPort(Mna::Ground::Reference));
-  system.connect(g.getPort(Mna::Ground::Reference), vac1.getPort(Mna::VoltageSourceAC::Negative));
-  
-  system.connect(c1.getPort(Mna::Capacitor::Positive), sensor.getPort(Signal::VelocitySensor::Sensor));
-
   ofstream outputFile("output.csv");
-  ostream& outputStream = outputFile;
-  outputStream << "Time,V source,Voltage Capacitor" << endl;
+  ostream& outputStream = cout;
+  outputStream << "Time,PID Output,V source,Velocity Motor" << endl;
   for(double time = 0.0; time <= FINAL_TIME; time += TIME_STEP)
   {
-    system.step(TIME_STEP, time);
+	co1.step(TIME_STEP, time);
+	  
+	sd1.setInputPortValue(Signal::SumDiff::Reference, co1.getOutPortValue(Signal::ConstantOutput::Constant));
+	sd1.setInputPortValue(Signal::SumDiff::Signal, sensor.getOutPortValue(Signal::VelocitySensor::Velocity));
+	sd1.step(TIME_STEP, time);
+
+	pid1.setInputPortValue(Signal::PIDController::Error, sd1.getOutPortValue(Signal::SumDiff::Difference));
+	pid1.step(TIME_STEP, time);
+
+	scvs1.setInputPortValue(Signal::SignalControlledVoltageSource::Signal, pid1.getOutPortValue(Signal::PIDController::CorrectedOutput));
+
+	system.step(TIME_STEP, time);
+
     outputStream << time << ','
-                 << vac2.getAcross(Mna::VoltageSourceAC::Positive) << ','
+				 << pid1.getOutPortValue(Signal::PIDController::CorrectedOutput) << ','
+                 << scvs1.getAcross(Signal::SignalControlledVoltageSource::Positive) << ','
                  << sensor.getOutPortValue(Signal::VelocitySensor::Velocity)
                  << endl;
   }
