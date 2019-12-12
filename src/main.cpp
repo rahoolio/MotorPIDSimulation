@@ -18,8 +18,8 @@
 using namespace ELCT350;
 using namespace std;
 
-const double TIME_STEP = 0.1;
-const double FINAL_TIME = 40.0;
+const double TIME_STEP = 0.01;
+const double FINAL_TIME = 4.0;
 
 enum ErrorCodes
 {
@@ -30,16 +30,16 @@ int main()
 {
   MnaSystem system;
   Signal::VelocitySensor sensor;
-  Signal::ConstantOutput co1 = Signal::ConstantOutput(1000.0);
+  Signal::ConstantOutput co1 = Signal::ConstantOutput(25000.0);
   Signal::SumDiff sd1;
   Signal::PIDController pid1;
   Signal::SignalControlledVoltageSource scvs1;
   Mna::MotorDC mdc1;
   Mna::Ground g1;
 
-  pid1.setParameter(Signal::PIDController::Kp, 0.1);
-  pid1.setParameter(Signal::PIDController::Ki, 0.5);
-  pid1.setParameter(Signal::PIDController::Kd, 0.01);
+  pid1.setParameter(Signal::PIDController::Kp, 3.0);
+  pid1.setParameter(Signal::PIDController::Ki, 72.0);
+  pid1.setParameter(Signal::PIDController::Kd, 0.5);
 
   scvs1.setParameter(Signal::SignalControlledVoltageSource::Gain, 0.001);
 
