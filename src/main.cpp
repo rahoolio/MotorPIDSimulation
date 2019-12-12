@@ -35,6 +35,7 @@ int main()
   Signal::PIDController pid1;
   Signal::SignalControlledVoltageSource scvs1;
   Mna::MotorDC mdc1;
+  Mna::Ground g1;
 
   pid1.setParameter(Signal::PIDController::Kp, 0.1);
   pid1.setParameter(Signal::PIDController::Ki, 0.5);
@@ -49,7 +50,8 @@ int main()
   mdc1.setParameter(Mna::MotorDC::J, 2.1518e-6); // Inertia
 
   system.connect(scvs1.getPort(Signal::SignalControlledVoltageSource::Positive), mdc1.getPort(Mna::MotorDC::Positive));
-  system.connect(mdc1.getPort(Mna::MotorDC::Negative), scvs1.getPort(Signal::SignalControlledVoltageSource::Negative));
+  system.connect(mdc1.getPort(Mna::MotorDC::Negative), g1.getPort(Mna::Ground::Reference));
+  system.connect(g1.getPort(Mna::Ground::Reference), scvs1.getPort(Signal::SignalControlledVoltageSource::Negative));
   system.connect(mdc1.getPort(Mna::MotorDC::Velocity), sensor.getPort(Signal::VelocitySensor::Sensor));
   
   ofstream outputFile("output.csv");
