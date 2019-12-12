@@ -55,8 +55,8 @@ int main()
   system.connect(mdc1.getPort(Mna::MotorDC::Velocity), sensor.getPort(Signal::VelocitySensor::Sensor));
   
   ofstream outputFile("output.csv");
-  ostream& outputStream = cout;
-  outputStream << "Time,PID Output,V source,Velocity Motor" << endl;
+  ostream& outputStream = outputFile;
+  outputStream << "Time,Velocity Motor,Error,PID Output,V source" << endl;
   for(double time = 0.0; time <= FINAL_TIME; time += TIME_STEP)
   {
 	co1.step(TIME_STEP, time);
@@ -73,9 +73,10 @@ int main()
 	system.step(TIME_STEP, time);
 
     outputStream << time << ','
+                 << sensor.getOutPortValue(Signal::VelocitySensor::Velocity) << ','
+                 << sd1.getOutPortValue(Signal::SumDiff::Difference) << ','
 				 << pid1.getOutPortValue(Signal::PIDController::CorrectedOutput) << ','
-                 << scvs1.getAcross(Signal::SignalControlledVoltageSource::Positive) << ','
-                 << sensor.getOutPortValue(Signal::VelocitySensor::Velocity)
+                 << scvs1.getAcross(Signal::SignalControlledVoltageSource::Positive)
                  << endl;
   }
 
