@@ -37,8 +37,7 @@ namespace ELCT350
     private:
       #pragma region variables
 	  double _velocity;
-	  double _currentNegative;
-      double _currentPositive;
+	  double _current;
       #pragma endregion
     };
   }

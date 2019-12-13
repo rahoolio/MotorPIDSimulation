@@ -8,8 +8,7 @@ MotorDC::MotorDC()
   : SimulationBlock(5),
     MnaBlock(3),
 	_velocity(0.0),
-	_currentNegative(0.0),
-	_currentPositive(0.0)
+    _current(0.0)
 {
 }
 #pragma endregion
@@ -35,16 +34,15 @@ void MotorDC::step(double dTimeStep, double dCurrentTime)
   setJacobian(Velocity, Velocity, velocity);
 
   double commonCoefficient2 = _parameters[L] / (_parameters[L] + (dTimeStep * _parameters[R]));
-  setIntercept(Negative, commonCoefficient2 * _currentNegative);
-  setIntercept(Positive, commonCoefficient2 * _currentPositive);
-  double interceptVelocity = ((-_parameters[J] / dTimeStep) * _velocity) - (commonCoefficient2 * _parameters[K] * _currentPositive);
+  setIntercept(Negative, -commonCoefficient2 * _current);
+  setIntercept(Positive, -commonCoefficient2 * _current);
+  double interceptVelocity = ((-_parameters[J] / dTimeStep) * _velocity) - (commonCoefficient2 * _parameters[K] * _current);
   setIntercept(Velocity, interceptVelocity);
 }
 
 void MotorDC::postStep()
 {
 	_velocity = getAcross(Velocity);
-	_currentNegative = getThrough(Negative);
-	_currentPositive = getThrough(Positive);
+    _current = getThrough(Positive);
 }
 #pragma endregion
