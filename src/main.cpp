@@ -56,7 +56,7 @@ int main()
   
   ofstream outputFile("output.csv");
   ostream& outputStream = outputFile;
-  outputStream << "Time,Velocity Motor,Error,PID Output,V source" << endl;
+  outputStream << "Time,Reference,Velocity Motor,Error,PID Output,V source" << endl;
   for(double time = 0.0; time <= FINAL_TIME; time += TIME_STEP)
   {
     system.step(TIME_STEP, time);
@@ -73,6 +73,7 @@ int main()
 	scvs1.setInputPortValue(Signal::SignalControlledVoltageSource::Signal, pid1.getOutPortValue(Signal::PIDController::CorrectedOutput));
 
     outputStream << time << ','
+                 << co1.getOutPortValue(Signal::ConstantOutput::Constant) << ','
                  << sensor.getOutPortValue(Signal::VelocitySensor::Velocity) << ','
                  << sd1.getOutPortValue(Signal::SumDiff::Difference) << ','
 				 << pid1.getOutPortValue(Signal::PIDController::CorrectedOutput) << ','
