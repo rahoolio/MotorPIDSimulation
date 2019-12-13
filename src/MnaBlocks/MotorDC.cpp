@@ -44,7 +44,7 @@ void MotorDC::step(double dTimeStep, double dCurrentTime)
 void MotorDC::postStep()
 {
 	_velocity = getAcross(Velocity);
-	_currentNegative = getAcross(Negative);
-	_currentPositive = getAcross(Positive);
+	_currentNegative = getThrough(Negative);
+	_currentPositive = getThrough(Positive);
 }
 #pragma endregion
