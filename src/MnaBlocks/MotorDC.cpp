@@ -35,8 +35,8 @@ void MotorDC::step(double dTimeStep, double dCurrentTime)
   setJacobian(Velocity, Velocity, velocity);
 
   double commonCoefficient2 = _parameters[L] / (_parameters[L] + (dTimeStep * _parameters[R]));
-  setIntercept(Negative, -commonCoefficient2 * _currentPositive);
-  setIntercept(Positive, commonCoefficient2 * _currentNegative);
+  setIntercept(Negative, commonCoefficient2 * _currentNegative);
+  setIntercept(Positive, commonCoefficient2 * _currentPositive);
   double interceptVelocity = ((-_parameters[J] / dTimeStep) * _velocity) - (commonCoefficient2 * _parameters[K] * _currentPositive);
   setIntercept(Velocity, interceptVelocity);
 }
