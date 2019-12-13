@@ -259,22 +259,24 @@ namespace ELCT350
       jacobian.zeroMatrix();
       #pragma region Copy Jacobian from Engines into system here
       #pragma endregion
-	  for (const auto* engine : _engines)
-		  for (size_t row = 0; row < engine->getNumPorts(); row++)
-		  {
-			  const auto& rowPort = engine->getPort(row);
-			  if (rowPort.AssignedNode)
-			  {
-				  for (size_t column = 0; column < engine->getNumPorts(); column++)
-				  {
-					  const auto& columnPort = engine->getPort(column);
-					  if (columnPort.AssignedNode)
-					  {
-						  jacobian(rowPort.Node, columnPort.Node) += engine->getJacobian(row,column);
-					  }
-				  }
-			  }
-		  }
+      for (const auto* engine : _engines)
+      {
+        for (size_t row = 0; row < engine->getNumPorts(); row++)
+        {
+          const auto& rowPort = engine->getPort(row);
+          if (rowPort.AssignedNode)
+          {
+            for (size_t column = 0; column < engine->getNumPorts(); column++)
+            {
+              const auto& columnPort = engine->getPort(column);
+              if (columnPort.AssignedNode)
+              {
+                  jacobian(rowPort.Node, columnPort.Node) += engine->getJacobian(row, column);
+              }
+            }
+          }
+        }
+      }
     }
 
     /**
@@ -305,9 +307,8 @@ namespace ELCT350
     void solve(const Matrix<T>& jacobian, const Matrix<T>& intercept, Matrix<T>& across)
     {
       #pragma region Solve for across here
+      across = jacobian.getInverse() * intercept;
       #pragma endregion
-
-		across = jacobian.getInverse() * intercept;
     }
 
     /**
@@ -341,21 +342,21 @@ namespace ELCT350
     void propagateValues(const Matrix<T>& across)
     {
       #pragma region Propagate Across values to engines here
-
-		for (auto* engine : _engines)
-			for (size_t row = 0; row < engine->getNumPorts(); row++)
-			{
-				const auto& rowPort = engine->getPort(row);
-				if (rowPort.AssignedNode)
-				{
-					engine->setAcross(row, across(rowPort.Node, 0));
-				}
-				else
-				{
-					engine->setAcross(row, 0);
-				}
-			}
-
+      for (auto* engine : _engines)
+      {
+        for (size_t row = 0; row < engine->getNumPorts(); row++)
+        {
+          const auto& rowPort = engine->getPort(row);
+          if (rowPort.AssignedNode)
+          {
+            engine->setAcross(row, across(rowPort.Node, 0));
+          }
+          else
+          {
+            engine->setAcross(row, 0);
+          }
+        }
+      }
       #pragma endregion
 
       for (auto* engine : _engines)
