@@ -12,6 +12,7 @@
 #include "SignalBlocks/PIDController.h"
 #include "SignalBlocks/SignalControlledVoltageSource.h"
 #include "MnaBlocks/MotorDC.h"
+#include "MnaBlocks/CurrentSource.h"
 
 #include "Plotter/Plotter.h"
 
@@ -36,6 +37,8 @@ int main()
   Signal::SignalControlledVoltageSource scvs1;
   Mna::MotorDC mdc1;
   Mna::Ground g1;
+  Mna::CurrentSource cs1;
+  Mna::Ground g2;
 
   pid1.setParameter(Signal::PIDController::Kp, 0.019040868292463);
   pid1.setParameter(Signal::PIDController::Ki, 0.135274987086848);
@@ -49,10 +52,15 @@ int main()
   mdc1.setParameter(Mna::MotorDC::K, 0.0022); // Motor gain
   mdc1.setParameter(Mna::MotorDC::J, 2.1518e-6); // Inertia
 
+  cs1.setParameter(Mna::CurrentSource::Current, 0.0195);
+
   system.connect(scvs1.getPort(Signal::SignalControlledVoltageSource::Positive), mdc1.getPort(Mna::MotorDC::Positive));
   system.connect(mdc1.getPort(Mna::MotorDC::Negative), g1.getPort(Mna::Ground::Reference));
   system.connect(g1.getPort(Mna::Ground::Reference), scvs1.getPort(Signal::SignalControlledVoltageSource::Negative));
   system.connect(mdc1.getPort(Mna::MotorDC::Velocity), sensor.getPort(Signal::VelocitySensor::Sensor));
+
+  system.connect(mdc1.getPort(Mna::MotorDC::Velocity), cs1.getPort(Mna::CurrentSource::Positive));
+  system.connect(cs1.getPort(Mna::CurrentSource::Negative), g2.getPort(Mna::Ground::Reference));
   
   ofstream outputFile("output.csv");
   ostream& outputStream = outputFile;
