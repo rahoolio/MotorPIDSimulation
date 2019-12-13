@@ -59,6 +59,8 @@ int main()
   outputStream << "Time,Velocity Motor,Error,PID Output,V source" << endl;
   for(double time = 0.0; time <= FINAL_TIME; time += TIME_STEP)
   {
+    system.step(TIME_STEP, time);
+
 	co1.step(TIME_STEP, time);
 	  
 	sd1.setInputPortValue(Signal::SumDiff::Reference, co1.getOutPortValue(Signal::ConstantOutput::Constant));
@@ -69,8 +71,6 @@ int main()
 	pid1.step(TIME_STEP, time);
 
 	scvs1.setInputPortValue(Signal::SignalControlledVoltageSource::Signal, pid1.getOutPortValue(Signal::PIDController::CorrectedOutput));
-
-	system.step(TIME_STEP, time);
 
     outputStream << time << ','
                  << sensor.getOutPortValue(Signal::VelocitySensor::Velocity) << ','
